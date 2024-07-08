@@ -1,0 +1,78 @@
+<app-menu />
+<div *ngIf="username == 'admin'">
+    <form [formGroup]="form" (ngSubmit)="addUser()">
+        <div class="grid" style="background-color: rgb(248, 238, 225);">
+            <div class="col-12" style=" color: red;">
+                <!-- USERNAME -->
+                @if (form.get('username')?.hasError('required') && form.get('username')?.touched) {
+                <p class="alert alert-warning">Name is required</p>
+                }
+                @if (form.get('username')?.hasError('minlength') && form.get('username')?.touched) {
+                <p class="alert alert-warning">Name: minimum legth of 3 characters</p>
+                }
+            </div>
+            <div class="field col-4">
+                <label for="username" class="block">Username</label>
+                <input pInputText id="username" formControlName="username" />
+            </div>
+        </div>
+    </form>
+    <p-divider />
+    <div class="card flex flex-wrap gap-3 justify-content-center" style="margin-top: 10px;">
+        <p-button *ngIf="selectedUser?.id == undefined" label="New" [raised]="true" (onClick)="addUser()"
+            [disabled]="form.invalid" icon="pi pi-user-plus" />
+        <span style="margin-right: 5px;">
+            <p-button *ngIf="selectedUser?.id != undefined" label="Update" [raised]="true" severity="success"
+                (onClick)="updateUser()" [disabled]="form.invalid" icon="pi pi-user-edit" />
+        </span>
+        <span style="margin-right: 5px;">
+            <p-button *ngIf="selectedUser?.id != undefined" label="Delete" [raised]="true" severity="danger"
+                (onClick)="showConfirm()" icon="pi pi-user-minus" />
+        </span>
+    </div>
+    <p-divider />
+</div>
+<div style="margin-top: 10px;">
+    <p-scrollPanel [style]="{ width: '100%', height: '80vh' }">
+        <p-table [value]="users" selectionMode="single" [(selection)]="selectedUser" (onRowSelect)="onRowSelect($event)"
+            (onRowUnselect)="onRowUnselect($event)" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Username</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-user>
+                <tr [pSelectableRow]="user">
+                    <td>{{ user.username }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-scrollPanel>
+</div>
+
+<p-toast position="top-center" key="confirm" (onClose)="onReject()" [baseZIndex]="5000">
+    <ng-template let-message pTemplate="message">
+        <div class="flex flex-column align-items-start" style="flex: 1">
+            <div class="flex align-items-center gap-2">
+                <span class="font-bold text-900">Confirm</span>
+            </div>
+            <div class="font-medium text-lg my-3 text-900">
+                Are you sure about delete {{selectedUser?.username}}?
+            </div>
+            <p-button label="Delete" (click)="onConfirm()" />
+        </div>
+    </ng-template>
+</p-toast>
+
+<p-toast position="top-right" key="msgs" [baseZIndex]="5000">
+    <ng-template let-message pTemplate="message">
+        <div class="flex flex-column align-items-start" style="flex: 1">
+            <div class="flex align-items-center gap-2">
+                <span class="font-bold text-900">{{hdrMsg}}</span>
+            </div>
+            <div class="font-medium text-lg my-3 text-900">
+                {{msg}}
+            </div>
+        </div>
+    </ng-template>
+</p-toast>

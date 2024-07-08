@@ -1,0 +1,144 @@
+<app-menu />
+<div *ngIf="username == 'admin'">
+    <form [formGroup]="form" (ngSubmit)="addProduct()">
+        <div class="grid" style="background-color: rgb(248, 238, 225);">
+            <div class="col-12" style=" color: red;">
+                <!-- PRODUCT NAME -->
+                @if (form.get('productName')?.hasError('required') && form.get('productName')?.touched) {
+                <p class="alert alert-warning">Name is required</p>
+                }
+                @if (form.get('productName')?.hasError('minlength') && form.get('productName')?.touched) {
+                <p class="alert alert-warning">Name: minimum legth of 3 characters</p>
+                }
+                <!-- DESCRIPTION -->
+                @if (form.get('description')?.hasError('required') && form.get('description')?.touched) {
+                <p class="alert alert-warning">Description is required</p>
+                }
+                @if (form.get('description')?.hasError('minlength') && form.get('description')?.touched) {
+                <p class="alert alert-warning">Description: minimum legth of 3 characters</p>
+                }
+                <!-- PRICE -->
+                @if (form.get('price')?.hasError('required') && form.get('price')?.touched) {
+                <p class="alert alert-warning">Price is required</p>
+                }
+                @if (form.get('price')?.hasError('min') && form.get('price')?.touched) {
+                <p class="alert alert-warning">Price must be minimum of 0.50</p>
+                }
+                <!-- QUANTITY -->
+                @if (form.get('quantity')?.hasError('required') && form.get('quantity')?.touched) {
+                <p class="alert alert-warning">Quantity is required</p>
+                }
+                @if (form.get('quantity')?.hasError('min') && form.get('quantity')?.touched) {
+                <p class="alert alert-warning">Quantity must be minimum of 1</p>
+                }
+                <!-- CATEGORY -->
+                @if (form.get('category')?.hasError('required') && form.get('category')?.touched) {
+                <p class="alert alert-warning">Category is required</p>
+                }
+            </div>
+            <div class="field col-4">
+                <label for="productName" class="block">Name</label>
+                <input pInputText id="productName" formControlName="productName" />
+            </div>
+
+            <div class="field col-4">
+                <label for="description" class="block">Description</label>
+                <input pInputText id="description" formControlName="description" />
+            </div>
+
+            <div class="field col-4">
+                <label for="price" class="block">Price</label>
+                <p-inputNumber formControlName="price" inputId="locale-user" mode="decimal" [minFractionDigits]="2"
+                    [maxFractionDigits]="2" id="price" />
+            </div>
+            <div class="field col-4">
+                <label for="quantity" class="block">Quantity</label>
+                <p-inputNumber inputId="integeronly" formControlName="quantity" min="0" id="quantity" />
+            </div>
+
+            <div class="field col-4">
+                <label for="category" class="block">Category</label>
+                <p-dropdown [options]="categories" formControlName="category" optionLabel="categoryName"
+                    placeholder="Select a category" class="dropdown" id="category" />
+            </div>
+
+            <div class="field col-4">
+                <label for="available" class="block">Available</label>
+                <p-inputSwitch formControlName="available" id="available" />
+            </div>
+
+        </div>
+    </form>
+    <p-divider />
+    <div class="card flex flex-wrap gap-3 justify-content-center" style="margin-top: 10px;">
+        <p-button *ngIf="selectedProduct?.id == undefined" label="New" [raised]="true" (onClick)="addProduct()" [disabled]="form.invalid"/>
+        <span style="margin-right: 5px;">
+            <p-button *ngIf="selectedProduct?.id != undefined" label="Update" [raised]="true" severity="success"
+                (onClick)="updateProduct()" [disabled]="form.invalid"/>
+        </span>
+        <span style="margin-right: 5px;">
+            <p-button *ngIf="selectedProduct?.id != undefined" label="Delete" [raised]="true" severity="danger"
+                (onClick)="showConfirm()" />
+        </span>
+    </div>
+    <p-divider />
+</div>
+<div style="margin-top: 10px;">
+    <p-scrollPanel [style]="{ width: '100%', height: '80vh' }">
+        <p-table [value]="products" selectionMode="single" [(selection)]="selectedProduct" dataKey="id"
+            (onRowSelect)="onRowSelect($event)" (onRowUnselect)="onRowUnselect($event)" [paginator]="true" [rows]="5"
+            styleClass="p-datatable-striped" [tableStyle]="{ 'min-width': '50rem' }" [rowsPerPageOptions]="[5, 10, 20]"
+            responsiveLayout="stack" [breakpoint]="'960px'">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width:20%">Name</th>
+                    <th style="width:20%">Description</th>
+                    <th style="width:20%">Category</th>
+                    <th style="width:20%">Quantity</th>
+                    <th style="width:20%">Price</th>
+                    <th style="width:20%">Available</th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-product>
+                <tr [pSelectableRow]="product">
+                    <td style="display: none;">{{product.id}}</td>
+                    <td>{{product.productName}}</td>
+                    <td>{{product.description}}</td>
+                    <td>{{product.category.categoryName}}</td>
+                    <td>{{product.quantity}}</td>
+                    <td>{{product.price}}</td>
+                    <td *ngIf="product.available"><input type="checkbox" checked disabled="true" /></td>
+                    <td *ngIf="!product.available"><input type="checkbox" unchecked disabled="true" /></td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-scrollPanel>
+</div>
+
+<p-toast position="top-center" key="confirm" (onClose)="onReject()" [baseZIndex]="5000">
+    <ng-template let-message pTemplate="message">
+        <div class="flex flex-column align-items-start" style="flex: 1">
+            <div class="flex align-items-center gap-2">
+                <span class="font-bold text-900">Confirm</span>
+            </div>
+            <div class="font-medium text-lg my-3 text-900">
+                Are you sure about delete {{selectedProduct?.productName}}?
+            </div>
+            <p-button label="Delete" (click)="onConfirm()" />
+        </div>
+    </ng-template>
+</p-toast>
+
+<p-toast position="top-right" key="msgs" [baseZIndex]="5000">
+    <ng-template let-message pTemplate="message">
+        <div class="flex flex-column align-items-start" style="flex: 1">
+            <div class="flex align-items-center gap-2">
+                <span class="font-bold text-900">{{hdrMsg}}</span>
+            </div>
+            <div class="font-medium text-lg my-3 text-900">
+                {{msg}}
+            </div>
+        </div>
+    </ng-template>
+</p-toast>

@@ -21,6 +21,8 @@ import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { Product } from '../../types/Product';
 import { Client } from '../../types/Client';
+import { Item } from '../../types/Item';
+import { Order } from '../../types/Order';
 
 @Component({
   selector: 'app-orders',
@@ -54,19 +56,22 @@ export class OrdersComponent implements OnInit {
 
   protected form: FormGroup = new FormGroup({
     product: new FormControl('', Validators.required),
-    client: new FormControl('', Validators.required),
-    price: new FormControl(0),
-    available: new FormControl(''),
-    quantity: new FormControl(0),
+    price: new FormControl({ value: 0, disabled: true }),
+    quantity: new FormControl(1, Validators.required),
+    totalItem: new FormControl({ value: 0, disabled: true }),
   });
+
+  // client: new FormControl('', Validators.required),
+  // price: new FormControl({value: 0, disabled: true}, Validators.required),
 
   protected products: Product[] = [];
   protected clients: Client[] = [];
+  protected orders: Order[] = [];
 
-  protected selectedProduct: Product | undefined;
-  protected selectedClient: Client | undefined;
-  protected price: number | undefined;
-  protected available: boolean | undefined;
+  protected selectedProduct: Product = new Product();
+  protected selectedItem: Item = new Item();
+  protected selectedOrder: Order = new Order();
+  protected selectedClient: Client = new Client();
 
   protected msg: string = '';
   protected hdrMsg: string = '';
@@ -84,15 +89,18 @@ export class OrdersComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.clients = [{"id": 1, "name": "Client 1"},{"id": 2, "name": "Client 2"},{"id": 3, "name": "Client 3"},];
+    this.clients = JSON.parse('[{"id": 1, "name": "Client 1"}, {"id": 2, "name": "Client 2"}, {"id": 3, "name": "Client 3"}]');
+    // console.log(JSON.stringify(this.clients, null, 2));
     this.username = sessionStorage.getItem("username");
     this.getProducts();
-    console.log(JSON.stringify(this.products, null, 2));
   }
 
   getProducts() {
     this.productService.getProducts().subscribe({
-      next: (data: any) => { this.products = data['content']; },
+      next: (data) => {
+        this.products = data;
+        // console.log(JSON.stringify(this.products, null, 2));
+      },
       error: (e) => {
         this.credentialsErrorMsg(e);
         this.notAllowedMsg(e);
@@ -102,25 +110,48 @@ export class OrdersComponent implements OnInit {
     });
   }
 
-  fillFields() {
+  onSelectProduct(event: any) {
+    // console.log(JSON.stringify(event, null, 2));
+
+    this.selectedProduct = this.form.value.product;
+    this.selectedItem = new Item();
+    this.selectedItem.product = this.selectedProduct;
     this.form.value.price = this.selectedProduct?.price;
-    this.form.value.available = this.selectedProduct?.available;
+    this.selectedItem.price = this.form.value.price;
+    this.selectedItem.quantity = this.form.value.quantity;
+    const q = this.form.value.quantity;
+    const p = this.form.value.price;
+    const t = q * p;
+    this.selectedItem.total = t;
+
+    this.form.setValue({
+      product: this.selectedItem?.product,
+      price: p,
+      quantity: q,
+      totalItem: t
+    });
+  }
+
+  getTotalItem(event: any) {
+    const p: any = this.selectedProduct?.price;
+    const t: number = parseFloat(p) * this.form.value.quantity;
+    this.form.patchValue({
+      totalItem: t
+    });
   }
 
   onRowSelect(event: any) {
     this.form.setValue({
-      productName: this.selectedProduct?.productName,
-      description: this.selectedProduct?.description,
-      price: this.selectedProduct?.price,
-      quantity: this.selectedProduct?.quantity,
-      available: this.selectedProduct?.available,
-      category: this.selectedProduct?.category
+      product: this.selectedItem?.product,
+      price: this.selectedItem?.price,
+      quantity: this.selectedItem?.quantity,
+      totalItem: this.selectedItem?.total
     });
-    console.log(JSON.stringify(this.selectedProduct, null, 2));
+    // console.log(JSON.stringify(this.selectedItem, null, 2));
   }
 
   onRowUnselect(event: any) {
-    this.selectedProduct = undefined;
+    this.selectedItem = new Item();
     this.form.reset();
   }
 

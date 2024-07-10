@@ -1,46 +1,52 @@
 <app-menu />
 <form [formGroup]="form" (ngSubmit)="addOrder()">
     <div class="grid" style="background-color: rgb(248, 238, 225);">
-        <div class="field col-4">
+        <div class="field col-3">
             <label for="productName" class="block">Product</label>
-            <p-dropdown [options]="products" formControlName="product" optionLabel="productName"
-                placeholder="Select a product" class="dropdown" id="product" onselect=fillFields()/>
+            <p-dropdown [options]="products" formControlName="product" optionLabel="productName" [checkmark]="true"
+                [showClear]="true" placeholder="Select a product" class="dropdown" id="product"
+                (onChange)="onSelectProduct($event)" />
         </div>
 
-        <div class="field col-4">
+        <!-- <div class="field col-3">
             <label for="clientName" class="block">Client</label>
-            <p-dropdown [options]="clients" formControlName="client" optionLabel="clientName"
-                placeholder="Select a product" class="dropdown" id="clientName" />
-        </div>
+            <p-dropdown [options]="clients" formControlName="client" optionLabel="name" [checkmark]="true"
+                [showClear]="true" placeholder="Select a client" class="dropdown" id="clientName" />
+        </div> -->
 
-        <div class="field col-4">
+        <div class="field col-3">
             <label for="price" class="block">Price</label>
             <p-inputNumber formControlName="price" inputId="locale-user" mode="decimal" [minFractionDigits]="2"
-                [maxFractionDigits]="2" id="price" readonly="true"/>
+                [maxFractionDigits]="2" id="price" />
         </div>
 
-        <div class="field col-4">
+        <div class="field col-3">
             <label for="quantity" class="block">Quantity</label>
-            <p-inputNumber inputId="integeronly" formControlName="quantity" min="0" id="quantity" />
+            <!-- <p-inputNumber inputId="integeronly" formControlName="quantity" min="0" id="quantity" (onKeyDown)="getTotalItem()" /> -->
+
+            <p-inputNumber inputId="integeronly" formControlName="quantity" id="quantity"
+                incrementButtonIcon="pi pi-angle-right" decrementButtonIcon="pi pi-angle-left" [min]="1"
+                (onKeyDown)="getTotalItem($event)">
+            </p-inputNumber>
         </div>
 
-        <div class="field col-4">
-            <label for="available" class="block">Available</label>
-            <p-inputSwitch formControlName="available" id="available" readonly="true"/>
+        <div class="field col-3">
+            <label for="totalItem" class="block">Total Item</label>
+            <p-inputNumber mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" formControlName="totalItem"
+                min="0" id="totalItem" />
         </div>
-
     </div>
 </form>
 <p-divider />
 <div class="card flex flex-wrap gap-3 justify-content-center" style="margin-top: 10px;">
-    <p-button *ngIf="selectedProduct?.id == undefined" label="New" [raised]="true" (onClick)="addOrder()"
+    <p-button *ngIf="selectedItem?.id == undefined" label="New" [raised]="true" (onClick)="addOrder()"
         [disabled]="form.invalid" />
     <span style="margin-right: 5px;">
-        <p-button *ngIf="selectedProduct?.id != undefined" label="Update" [raised]="true" severity="success"
+        <p-button *ngIf="selectedItem?.id != undefined" label="Update" [raised]="true" severity="success"
             (onClick)="updateItem()" [disabled]="form.invalid" />
     </span>
     <span style="margin-right: 5px;">
-        <p-button *ngIf="selectedProduct?.id != undefined" label="Delete" [raised]="true" severity="danger"
+        <p-button *ngIf="selectedItem?.id != undefined" label="Delete" [raised]="true" severity="danger"
             (onClick)="showConfirm()" />
     </span>
 </div>

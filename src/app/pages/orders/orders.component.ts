@@ -17,13 +17,13 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { DividerModule } from 'primeng/divider';
 
 import { MenuComponent } from '../../components/menu/menu.component';
-import { Category } from '../../types/Category';
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { Product } from '../../types/Product';
+import { Client } from '../../types/Client';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-orders',
   standalone: true,
   imports: [
     MenuComponent,
@@ -47,24 +47,27 @@ import { Product } from '../../types/Product';
     CategoryService,
     MessageService,
   ],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
+  templateUrl: './orders.component.html',
+  styleUrl: './orders.component.scss'
 })
-export class HomeComponent implements OnInit {
+export class OrdersComponent implements OnInit {
 
   protected form: FormGroup = new FormGroup({
-    productName: new FormControl('', [Validators.required, Validators.minLength(3)]),
-    description: new FormControl('', [Validators.required, Validators.minLength(3)]),
-    price: new FormControl(0, [Validators.required, Validators.min(0.50)]),
+    product: new FormControl('', Validators.required),
+    client: new FormControl('', Validators.required),
+    price: new FormControl(0),
     available: new FormControl(''),
-    quantity: new FormControl(0, [Validators.required, Validators.min(1)]),
-    category: new FormControl(Category, Validators.required),
+    quantity: new FormControl(0),
   });
 
-  categories: Category[] = [];
-  products: Product[] = [];
+  protected products: Product[] = [];
+  protected clients: Client[] = [];
 
-  selectedProduct: Product | undefined;
+  protected selectedProduct: Product | undefined;
+  protected selectedClient: Client | undefined;
+  protected price: number | undefined;
+  protected available: boolean | undefined;
+
   protected msg: string = '';
   protected hdrMsg: string = '';
 
@@ -77,35 +80,31 @@ export class HomeComponent implements OnInit {
   constructor(
     private router: Router,
     private productService: ProductService,
-    private categoryService: CategoryService,
     private messageService: MessageService,
   ) { }
 
   ngOnInit() {
+    this.clients = [{"id": 1, "name": "Client 1"},{"id": 2, "name": "Client 2"},{"id": 3, "name": "Client 3"},];
     this.username = sessionStorage.getItem("username");
-    this.categoryService.getCategories().subscribe({
-      next: (data: any) => {
-        this.categories = data['content'];
-      },
-      error: (e) => {
-        this.credentialsErrorMsg(e);
-        this.notAllowedMsg(e);
-        this.insternalErrorMsg(e);
-        setTimeout(() => { this.router.navigate(["login"]) }, 1500);
-      }
-    });
-    this.getPageOfProducts();
+    this.getProducts();
+    console.log(JSON.stringify(this.products, null, 2));
   }
 
-  getPageOfProducts() {
-    this.productService.getPageOfProducts(this.page, this.size).subscribe({
+  getProducts() {
+    this.productService.getProducts().subscribe({
       next: (data: any) => { this.products = data['content']; },
       error: (e) => {
+        this.credentialsErrorMsg(e);
         this.notAllowedMsg(e);
         this.insternalErrorMsg(e);
         setTimeout(() => { this.router.navigate(["login"]) }, 2000);
       }
     });
+  }
+
+  fillFields() {
+    this.form.value.price = this.selectedProduct?.price;
+    this.form.value.available = this.selectedProduct?.available;
   }
 
   onRowSelect(event: any) {
@@ -125,68 +124,68 @@ export class HomeComponent implements OnInit {
     this.form.reset();
   }
 
-  addProduct() {
-    const product = this.form.value as Product;
-    if (!product.category?.id) {
-      this.msg = 'Category is required';
-      this.hdrMsg = 'Error';
-      this.showMsg();
-      return;
-    }
-    this.productService.addProduct(product).subscribe({
-      next: (data: any) => {
-        this.onRowUnselect(null);
-        this.getPageOfProducts();
-        this.msg = 'Product added with success!';
-        this.hdrMsg = 'Success';
-        this.showMsg();
-      },
-      error: (e) => {
-        this.credentialsErrorMsg(e);
-        this.notAllowedMsg(e);
-        this.insternalErrorMsg(e);
-        // setTimeout(() => { this.router.navigate(["login"]) }, 1500);
-      }
-    });
+  addOrder() {
+    // const order = this.form.value as Order;
+    // if (!order.product?.id) {
+    //   this.msg = 'Product is required';
+    //   this.hdrMsg = 'Error';
+    //   this.showMsg();
+    //   return;
+    // }
+    // this.productService.addProduct(product).subscribe({
+    //   next: (data: any) => {
+    //     this.onRowUnselect(null);
+    //     this.getPageOfProducts();
+    //     this.msg = 'Product added with success!';
+    //     this.hdrMsg = 'Success';
+    //     this.showMsg();
+    //   },
+    //   error: (e) => {
+    //     this.credentialsErrorMsg(e);
+    //     this.notAllowedMsg(e);
+    //     this.insternalErrorMsg(e);
+    //     // setTimeout(() => { this.router.navigate(["login"]) }, 1500);
+    //   }
+    // });
   }
 
-  updateProduct() {
-    const product = this.form.value as Product;
-    product.id = this.selectedProduct?.id;
-    this.productService.updateProduct(product).subscribe({
-      next: (data: any) => {
-        this.onRowUnselect(null);
-        this.getPageOfProducts();
-        this.msg = 'Product updated with success!';
-        this.hdrMsg = 'Success';
-        this.showMsg();
-      },
-      error: (e) => {
-        this.credentialsErrorMsg(e);
-        this.notAllowedMsg(e);
-        this.insternalErrorMsg(e);
-        // setTimeout(() => { this.router.navigate(["login"]) }, 1500);
-      }
-    });
+  updateItem() {
+    // const order = this.form.value as Item;
+    // item.id = this.selectedItem?.id;
+    // this.productService.updateProduct(product).subscribe({
+    //   next: (data: any) => {
+    //     this.onRowUnselect(null);
+    //     this.getPageOfProducts();
+    //     this.msg = 'Product updated with success!';
+    //     this.hdrMsg = 'Success';
+    //     this.showMsg();
+    //   },
+    //   error: (e) => {
+    //     this.credentialsErrorMsg(e);
+    //     this.notAllowedMsg(e);
+    //     this.insternalErrorMsg(e);
+    //     // setTimeout(() => { this.router.navigate(["login"]) }, 1500);
+    //   }
+    // });
   }
 
-  deleteProduct() {
-    const id: number = this.selectedProduct?.id!;
-    this.productService.deleteProduct(id).subscribe({
-      next: (data: any) => {
-        this.onRowUnselect(null);
-        this.getPageOfProducts();
-        this.msg = 'Product deleted with success!';
-        this.hdrMsg = 'Success';
-        this.showMsg();
-      },
-      error: (e) => {
-        this.credentialsErrorMsg(e);
-        this.notAllowedMsg(e);
-        this.insternalErrorMsg(e);
-        // setTimeout(() => { this.router.navigate(["login"]) }, 1500);
-      }
-    });
+  deleteItem() {
+    // const id: number = this.selectedItem?.id!;
+    // this.productService.deleteProduct(id).subscribe({
+    //   next: (data: any) => {
+    //     this.onRowUnselect(null);
+    //     this.getPageOfProducts();
+    //     this.msg = 'Product deleted with success!';
+    //     this.hdrMsg = 'Success';
+    //     this.showMsg();
+    //   },
+    //   error: (e) => {
+    //     this.credentialsErrorMsg(e);
+    //     this.notAllowedMsg(e);
+    //     this.insternalErrorMsg(e);
+    //     // setTimeout(() => { this.router.navigate(["login"]) }, 1500);
+    //   }
+    // });
   }
 
   credentialsErrorMsg(e: any) {
@@ -227,7 +226,7 @@ export class HomeComponent implements OnInit {
 
   onConfirm() {
     this.messageService.clear('confirm');
-    this.deleteProduct();
+    this.deleteItem();
   }
 
   onReject() {

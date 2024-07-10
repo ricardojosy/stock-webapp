@@ -12,6 +12,15 @@ export class ProductService {
 
   constructor(private http: HttpClient) { }
 
+  getProducts(): Observable<Product[]>{
+    return this.http.get<Product[]>(this.apiUrl + '/api/v1/products/listOrdered', {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem("accessToken")}`
+      })
+    });
+  }
+
   getPageOfProducts(page: number, size: number): Observable<Product[]>{
     return this.http.get<Product[]>(this.apiUrl + '/api/v1/products?page='+page+'&size='+size+'&sort=productName', {
       headers: new HttpHeaders({

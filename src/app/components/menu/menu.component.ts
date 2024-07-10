@@ -50,6 +50,7 @@ export class MenuComponent implements OnInit {
     this.items = [
       {label: 'Logout', icon: 'pi pi-sign-out', command: () => this.cleanSession()},
       {label: 'Products', icon: 'pi pi-barcode', command: () => this.router.navigate(["home"])},
+      {label: 'Orders', icon: 'pi pi-receipt', command: () => this.router.navigate(["orders"])},
       {label: 'Users', icon: 'pi pi-users', command: () => this.router.navigate(["users"])},
     ]
   }

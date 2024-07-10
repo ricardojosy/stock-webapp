@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { LoginResponse } from '../types/login-response.type';
-import { tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ export class LoginService {
 
   constructor(private httpClient: HttpClient) { }
 
-  login(username: string, password: string) {
+  login(username: string, password: string): Observable<LoginResponse> {
     return this.httpClient.post<LoginResponse>(this.apiUrl + "/api/v1/login", { username, password }).pipe(
       tap((value) => {
         sessionStorage.setItem("accessToken", value.accessToken)

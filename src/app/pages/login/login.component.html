@@ -1,3 +1,4 @@
+<p-toast [life]="1500" />
 <app-default-login-layout
     title="Login into your account"
     primaryBtnText="Login Now"
@@ -20,9 +21,23 @@
             inputName="password"
             type="password"
             label="Your Password"
+            placeholder="password"
         >
         <img src="/assets/svg/password-icon.svg"/>
     </app-primary-input>
     <span>Forgot password?</span>
     </form>
 </app-default-login-layout>
+
+<p-toast position="top-right" key="msgs" [baseZIndex]="5000">
+    <ng-template let-message pTemplate="message">
+        <div class="flex flex-column align-items-start" style="flex: 1">
+            <div class="flex align-items-center gap-2">
+                <span class="font-bold text-900">{{hdrMsg}}</span>
+            </div>
+            <div class="font-medium text-lg my-3 text-900">
+                {{msg}}
+            </div>
+        </div>
+    </ng-template>
+</p-toast>

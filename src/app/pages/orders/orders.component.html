@@ -1,0 +1,103 @@
+<app-menu />
+<form [formGroup]="form" (ngSubmit)="addOrder()">
+    <div class="grid" style="background-color: rgb(248, 238, 225);">
+        <div class="field col-4">
+            <label for="productName" class="block">Product</label>
+            <p-dropdown [options]="products" formControlName="product" optionLabel="productName"
+                placeholder="Select a product" class="dropdown" id="product" onselect=fillFields()/>
+        </div>
+
+        <div class="field col-4">
+            <label for="clientName" class="block">Client</label>
+            <p-dropdown [options]="clients" formControlName="client" optionLabel="clientName"
+                placeholder="Select a product" class="dropdown" id="clientName" />
+        </div>
+
+        <div class="field col-4">
+            <label for="price" class="block">Price</label>
+            <p-inputNumber formControlName="price" inputId="locale-user" mode="decimal" [minFractionDigits]="2"
+                [maxFractionDigits]="2" id="price" readonly="true"/>
+        </div>
+
+        <div class="field col-4">
+            <label for="quantity" class="block">Quantity</label>
+            <p-inputNumber inputId="integeronly" formControlName="quantity" min="0" id="quantity" />
+        </div>
+
+        <div class="field col-4">
+            <label for="available" class="block">Available</label>
+            <p-inputSwitch formControlName="available" id="available" readonly="true"/>
+        </div>
+
+    </div>
+</form>
+<p-divider />
+<div class="card flex flex-wrap gap-3 justify-content-center" style="margin-top: 10px;">
+    <p-button *ngIf="selectedProduct?.id == undefined" label="New" [raised]="true" (onClick)="addOrder()"
+        [disabled]="form.invalid" />
+    <span style="margin-right: 5px;">
+        <p-button *ngIf="selectedProduct?.id != undefined" label="Update" [raised]="true" severity="success"
+            (onClick)="updateItem()" [disabled]="form.invalid" />
+    </span>
+    <span style="margin-right: 5px;">
+        <p-button *ngIf="selectedProduct?.id != undefined" label="Delete" [raised]="true" severity="danger"
+            (onClick)="showConfirm()" />
+    </span>
+</div>
+<p-divider />
+
+<!-- <div style="margin-top: 10px;">
+    <p-scrollPanel [style]="{ width: '100%', height: '80vh' }">
+        <p-table [value]="items" selectionMode="single" [(selection)]="selectedItem" dataKey="id"
+            (onRowSelect)="onRowSelect($event)" (onRowUnselect)="onRowUnselect($event)" [paginator]="true" [rows]="5"
+            styleClass="p-datatable-striped" [tableStyle]="{ 'min-width': '50rem' }" [rowsPerPageOptions]="[5, 10, 20]"
+            responsiveLayout="stack" [breakpoint]="'960px'">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width:10%">Item</th>
+                    <th style="width:20%">Product</th>
+                    <th style="width:20%">Quantity/th>
+                    <th style="width:20%">Unit Price</th>
+                    <th style="width:20%">Total Item</th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-order>
+                <tr [pSelectableRow]="item">
+                    <td>{{order.id}}</td>
+                    <td>{{order.product.productName}}</td>
+                    <td>{{order.quantity}}</td>
+                    <td>{{order.product.price}}</td>
+                    <td>{{order.totalItem}}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-scrollPanel>
+</div> -->
+
+<p-toast position="top-center" key="confirm" (onClose)="onReject()" [baseZIndex]="5000">
+    <ng-template let-message pTemplate="message">
+        <div class="flex flex-column align-items-start" style="flex: 1">
+            <div class="flex align-items-center gap-2">
+                <span class="font-bold text-900">Confirm</span>
+            </div>
+            <div class="font-medium text-lg my-3 text-900">
+                Are you sure about delete {{selectedProduct?.productName}}?
+            </div>
+            <p-button label="Delete" (click)="onConfirm()" />
+        </div>
+    </ng-template>
+</p-toast>
+
+<p-toast position="top-right" key="msgs" [baseZIndex]="5000">
+    <ng-template let-message pTemplate="message">
+        <div class="flex flex-column align-items-start" style="flex: 1">
+            <div class="flex align-items-center gap-2">
+                <span class="font-bold text-900">{{hdrMsg}}</span>
+            </div>
+            <div class="font-medium text-lg my-3 text-900">
+                {{msg}}
+            </div>
+        </div>
+    </ng-template>
+</p-toast>

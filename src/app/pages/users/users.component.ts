@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -17,7 +17,6 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { DividerModule } from 'primeng/divider';
 
 import { MenuComponent } from '../../components/menu/menu.component';
-import { Category } from '../../types/Category';
 import { UserService } from '../../services/user.service';
 import { User } from '../../types/User';
 
@@ -99,7 +98,7 @@ export class UsersComponent implements OnInit {
           this.hdrMsg = 'Error';
           this.showMsg();
         }
-        setTimeout(() => { this.router.navigate(["login"]) }, 3000);
+        setTimeout(() => { this.router.navigate(["login"]) }, 15000);
       }
     });
 
@@ -228,6 +227,7 @@ export class UsersComponent implements OnInit {
       this.showMsg();
     }
   }
+
   showMsg() {
     let sev: string = '';
     if (this.hdrMsg == 'Success') { sev = 'success'; }

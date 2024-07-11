@@ -71,10 +71,11 @@
     </form>
     <p-divider />
     <div class="card flex flex-wrap gap-3 justify-content-center" style="margin-top: 10px;">
-        <p-button *ngIf="selectedProduct?.id == undefined" label="New" [raised]="true" (onClick)="addProduct()" [disabled]="form.invalid"/>
+        <p-button *ngIf="selectedProduct?.id == undefined" label="New" [raised]="true" (onClick)="addProduct()"
+            [disabled]="form.invalid" />
         <span style="margin-right: 5px;">
             <p-button *ngIf="selectedProduct?.id != undefined" label="Update" [raised]="true" severity="success"
-                (onClick)="updateProduct()" [disabled]="form.invalid"/>
+                (onClick)="updateProduct()" [disabled]="form.invalid" />
         </span>
         <span style="margin-right: 5px;">
             <p-button *ngIf="selectedProduct?.id != undefined" label="Delete" [raised]="true" severity="danger"
@@ -92,12 +93,11 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width:20%">Name</th>
-                    <th style="width:20%">Description</th>
+                    <th style="width:30%">Description</th>
                     <th style="width:20%">Category</th>
-                    <th style="width:20%">Quantity</th>
-                    <th style="width:20%">Price</th>
-                    <th style="width:20%">Available</th>
-                    <th></th>
+                    <th style="width:10%; text-align: center;">Quantity</th>
+                    <th style="width:10%; text-align: right;">Price</th>
+                    <th style="width:10%; text-align: center;">Available</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-product>
@@ -106,10 +106,9 @@
                     <td>{{product.productName}}</td>
                     <td>{{product.description}}</td>
                     <td>{{product.category.categoryName}}</td>
-                    <td>{{product.quantity}}</td>
-                    <td>{{product.price}}</td>
-                    <td *ngIf="product.available"><input type="checkbox" checked disabled="true" /></td>
-                    <td *ngIf="!product.available"><input type="checkbox" unchecked disabled="true" /></td>
+                    <td style="text-align: center;">{{product.quantity}}</td>
+                    <td style="text-align: right;">{{product.price}}</td>
+                    <td style="text-align: center;"><p-checkbox [(ngModel)]="product.available" [binary]="true" disabled="true"/></td>
                 </tr>
             </ng-template>
         </p-table>

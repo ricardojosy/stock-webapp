@@ -66,7 +66,7 @@ export class OrdersComponent implements OnInit {
 
   protected products: Product[] = [];
   protected clients: Client[] = [];
-  protected orders: Order[] = [];
+  protected items: Item[] = [];
 
   protected selectedProduct: Product = new Product();
   protected selectedItem: Item = new Item();
@@ -112,24 +112,13 @@ export class OrdersComponent implements OnInit {
 
   onSelectProduct(event: any) {
     // console.log(JSON.stringify(event, null, 2));
-
     this.selectedProduct = this.form.value.product;
-    this.selectedItem = new Item();
-    this.selectedItem.product = this.selectedProduct;
-    this.form.value.price = this.selectedProduct?.price;
-    this.selectedItem.price = this.form.value.price;
-    this.selectedItem.quantity = this.form.value.quantity;
-    const q = this.form.value.quantity;
-    const p = this.form.value.price;
-    const t = q * p;
-    this.selectedItem.total = t;
-
-    this.form.setValue({
-      product: this.selectedItem?.product,
-      price: p,
-      quantity: q,
-      totalItem: t
-    });
+    const price: any = this.selectedProduct?.price;
+    const total = parseInt(this.form.value.quantity) * parseFloat(price);
+    this.form.patchValue({ 
+      price: price,
+      totalItem: total,
+     });
   }
 
   getTotalItem(event: any) {

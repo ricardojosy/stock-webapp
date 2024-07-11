@@ -11,7 +11,7 @@
         <!-- <div class="field col-3">
             <label for="clientName" class="block">Client</label>
             <p-dropdown [options]="clients" formControlName="client" optionLabel="name" [checkmark]="true"
-                [showClear]="true" placeholder="Select a client" class="dropdown" id="clientName" />
+                [showClear]="true" placeholder="Select a client" class="dropdown" id="clientName"  />
         </div> -->
 
         <div class="field col-3">
@@ -22,12 +22,9 @@
 
         <div class="field col-3">
             <label for="quantity" class="block">Quantity</label>
-            <!-- <p-inputNumber inputId="integeronly" formControlName="quantity" min="0" id="quantity" (onKeyDown)="getTotalItem()" /> -->
-
             <p-inputNumber inputId="integeronly" formControlName="quantity" id="quantity"
                 incrementButtonIcon="pi pi-angle-right" decrementButtonIcon="pi pi-angle-left" [min]="1"
-                (onKeyDown)="getTotalItem($event)">
-            </p-inputNumber>
+                (onKeyDown)="getTotalItem($event)"/>
         </div>
 
         <div class="field col-3">
@@ -52,7 +49,7 @@
 </div>
 <p-divider />
 
-<!-- <div style="margin-top: 10px;">
+<div style="margin-top: 10px;">
     <p-scrollPanel [style]="{ width: '100%', height: '80vh' }">
         <p-table [value]="items" selectionMode="single" [(selection)]="selectedItem" dataKey="id"
             (onRowSelect)="onRowSelect($event)" (onRowUnselect)="onRowUnselect($event)" [paginator]="true" [rows]="5"
@@ -61,25 +58,25 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width:10%">Item</th>
-                    <th style="width:20%">Product</th>
-                    <th style="width:20%">Quantity/th>
-                    <th style="width:20%">Unit Price</th>
-                    <th style="width:20%">Total Item</th>
+                    <th style="width:60%">Product</th>
+                    <th style="width:10%">Quantity</th>
+                    <th style="width:10%">Unit Price</th>
+                    <th style="width:10%">Item Total</th>
                     <th></th>
                 </tr>
             </ng-template>
-            <ng-template pTemplate="body" let-order>
+            <ng-template pTemplate="body" let-item>
                 <tr [pSelectableRow]="item">
-                    <td>{{order.id}}</td>
-                    <td>{{order.product.productName}}</td>
-                    <td>{{order.quantity}}</td>
-                    <td>{{order.product.price}}</td>
-                    <td>{{order.totalItem}}</td>
+                    <td>{{item.id}}</td>
+                    <td>{{item.product.productName}}</td>
+                    <td>{{item.quantity}}</td>
+                    <td>{{item.product.price}}</td>
+                    <td>{{item.totalItem}}</td>
                 </tr>
             </ng-template>
         </p-table>
     </p-scrollPanel>
-</div> -->
+</div>
 
 <p-toast position="top-center" key="confirm" (onClose)="onReject()" [baseZIndex]="5000">
     <ng-template let-message pTemplate="message">

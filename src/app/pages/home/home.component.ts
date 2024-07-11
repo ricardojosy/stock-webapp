@@ -57,7 +57,7 @@ export class HomeComponent implements OnInit {
     description: new FormControl('', [Validators.required, Validators.minLength(3)]),
     price: new FormControl(0, [Validators.required, Validators.min(0.50)]),
     available: new FormControl(''),
-    quantity: new FormControl(0, [Validators.required, Validators.min(1)]),
+    quantity: new FormControl(0, [Validators.required, Validators.min(0)]),
     category: new FormControl(Category, Validators.required),
   });
 

@@ -15,9 +15,11 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { DividerModule } from 'primeng/divider';
+import { AutoCompleteCompleteEvent, AutoCompleteModule } from 'primeng/autocomplete';
 
 import { MenuComponent } from '../../components/menu/menu.component';
 import { ProductService } from '../../services/product.service';
+import { OrderService } from '../../services/order.service';
 import { CategoryService } from '../../services/category.service';
 import { Product } from '../../types/Product';
 import { Client } from '../../types/Client';
@@ -43,6 +45,7 @@ import { Order } from '../../types/Order';
     ReactiveFormsModule,
     InputSwitchModule,
     DividerModule,
+    AutoCompleteModule,
   ],
   providers: [
     ProductService,
@@ -61,10 +64,8 @@ export class OrdersComponent implements OnInit {
     totalItem: new FormControl({ value: 0, disabled: true }),
   });
 
-  // client: new FormControl('', Validators.required),
-  // price: new FormControl({value: 0, disabled: true}, Validators.required),
-
   protected products: Product[] = [];
+  protected filteredProducts: Product[] = [];
   protected clients: Client[] = [];
   protected items: Item[] = [];
 
@@ -85,6 +86,7 @@ export class OrdersComponent implements OnInit {
   constructor(
     private router: Router,
     private productService: ProductService,
+    private orderService: OrderService,
     private messageService: MessageService,
   ) { }
 
@@ -111,22 +113,39 @@ export class OrdersComponent implements OnInit {
   }
 
   onSelectProduct(event: any) {
-    // console.log(JSON.stringify(event, null, 2));
-    this.selectedProduct = this.form.value.product;
+    console.log(JSON.stringify(event, null, 2));
+    this.selectedProduct = event.value;
     const price: any = this.selectedProduct?.price;
     const total = parseInt(this.form.value.quantity) * parseFloat(price);
-    this.form.patchValue({ 
+    this.form.patchValue({
       price: price,
       totalItem: total,
-     });
+    });
   }
 
   getTotalItem(event: any) {
-    const p: any = this.selectedProduct?.price;
-    const t: number = parseFloat(p) * this.form.value.quantity;
+    const price: any = this.selectedProduct?.price;
+    const total: number = parseFloat(price) * this.form.value.quantity;
     this.form.patchValue({
-      totalItem: t
+      totalItem: total
     });
+  }
+
+  filterProduct(event: AutoCompleteCompleteEvent) {
+    if (event.query.length > 2) {
+      this.productService.getProductsStartingWith(event.query.trimEnd()).subscribe({
+        next: (data) => {
+          this.filteredProducts = data;
+          // console.log(JSON.stringify(this.filteredProducts, null, 2));
+        },
+        error: (e) => {
+          this.credentialsErrorMsg(e);
+          this.notAllowedMsg(e);
+          this.insternalErrorMsg(e);
+          setTimeout(() => { this.router.navigate(["login"]) }, 2000);
+        }
+      });
+    }
   }
 
   onRowSelect(event: any) {
@@ -144,29 +163,42 @@ export class OrdersComponent implements OnInit {
     this.form.reset();
   }
 
-  addOrder() {
-    // const order = this.form.value as Order;
-    // if (!order.product?.id) {
-    //   this.msg = 'Product is required';
-    //   this.hdrMsg = 'Error';
-    //   this.showMsg();
-    //   return;
-    // }
-    // this.productService.addProduct(product).subscribe({
-    //   next: (data: any) => {
-    //     this.onRowUnselect(null);
-    //     this.getPageOfProducts();
-    //     this.msg = 'Product added with success!';
-    //     this.hdrMsg = 'Success';
-    //     this.showMsg();
-    //   },
-    //   error: (e) => {
-    //     this.credentialsErrorMsg(e);
-    //     this.notAllowedMsg(e);
-    //     this.insternalErrorMsg(e);
-    //     // setTimeout(() => { this.router.navigate(["login"]) }, 1500);
-    //   }
-    // });
+  addOrder(order: Order) {
+    this.orderService.addOrder(order).subscribe({
+      next: (data: any) => {
+        this.onRowUnselect(null);
+        this.getItems();
+        this.msg = 'Product added with success!';
+        this.hdrMsg = 'Success';
+        this.showMsg();
+      },
+      error: (e) => {
+        this.credentialsErrorMsg(e);
+        this.notAllowedMsg(e);
+        this.insternalErrorMsg(e);
+        // setTimeout(() => { this.router.navigate(["login"]) }, 1500);
+      }
+    });
+  }
+
+  addItem() {
+    const order = this.form.value as Item;
+    if (!order.product?.id) {
+      this.msg = 'Product is required';
+      this.hdrMsg = 'Error';
+      this.showMsg();
+      return;
+    }
+    if (!this.selectedOrder.id) {
+      this.addOrder(this.selectedOrder);
+    }
+    if (this.items.length == 0) {
+      return;
+    }
+  }
+  
+  getItems() {
+
   }
 
   updateItem() {

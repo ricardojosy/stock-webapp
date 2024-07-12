@@ -1,11 +1,10 @@
 <app-menu />
-<form [formGroup]="form" (ngSubmit)="addOrder()">
+<form [formGroup]="form" (ngSubmit)="addItem()">
     <div class="grid" style="background-color: rgb(248, 238, 225);">
         <div class="field col-3">
             <label for="productName" class="block">Product</label>
-            <p-dropdown [options]="products" formControlName="product" optionLabel="productName" [checkmark]="true"
-                [showClear]="true" placeholder="Select a product" class="dropdown" id="product"
-                (onChange)="onSelectProduct($event)" />
+            <p-autoComplete formControlName="product" [suggestions]="filteredProducts"
+                (completeMethod)="filterProduct($event)" field="productName" (onSelect)="onSelectProduct($event)" />
         </div>
 
         <div class="field col-3">
@@ -18,7 +17,7 @@
             <label for="quantity" class="block">Quantity</label>
             <p-inputNumber inputId="integeronly" formControlName="quantity" id="quantity"
                 incrementButtonIcon="pi pi-angle-right" decrementButtonIcon="pi pi-angle-left" [min]="1"
-                (onKeyDown)="getTotalItem($event)"/>
+                (onKeyDown)="getTotalItem($event)" />
         </div>
 
         <div class="field col-3">
@@ -30,7 +29,7 @@
 </form>
 <p-divider />
 <div class="card flex flex-wrap gap-3 justify-content-center" style="margin-top: 10px;">
-    <p-button *ngIf="selectedItem?.id == undefined" label="New" [raised]="true" (onClick)="addOrder()"
+    <p-button *ngIf="selectedItem?.id == undefined" label="Add Item" [raised]="true" (onClick)="addItem()"
         [disabled]="form.invalid" />
     <span style="margin-right: 5px;">
         <p-button *ngIf="selectedItem?.id != undefined" label="Update" [raised]="true" severity="success"
@@ -79,7 +78,7 @@
                 <span class="font-bold text-900">Confirm</span>
             </div>
             <div class="font-medium text-lg my-3 text-900">
-                Are you sure about delete {{selectedProduct?.productName}}?
+                Are you sure about delete {{selectedProduct.productName}}?
             </div>
             <p-button label="Delete" (click)="onConfirm()" />
         </div>

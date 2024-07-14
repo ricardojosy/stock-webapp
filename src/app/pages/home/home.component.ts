@@ -152,7 +152,7 @@ export class HomeComponent implements OnInit {
 
   updateProduct() {
     const product = this.form.value as Product;
-    product.id = this.selectedProduct?.id;
+    product.id = this.selectedProduct?.id!;
     this.productService.updateProduct(product).subscribe({
       next: (data: any) => {
         this.onRowUnselect(null);

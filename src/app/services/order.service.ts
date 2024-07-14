@@ -2,6 +2,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Order } from '../types/Order';
+import { OrderResponse } from '../types/OrderResponse';
+import { TreeResponse } from '../types/TreeResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +17,17 @@ export class OrderService {
   getOrder(id: number): Observable<Order> {
     return this.http.get<Order>(this.apiUrl + '/api/v1/orders/' + id, {
       headers: new HttpHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem("accessToken")}`
+      })
+    });
+  }
+
+  getOrders(): Observable<any> {
+    return this.http.get<TreeResponse[]>(this.apiUrl + '/api/v1/orders', {
+      headers: new HttpHeaders({
+        'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem("accessToken")}`
       })

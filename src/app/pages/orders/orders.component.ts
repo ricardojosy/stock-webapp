@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService, TreeNode } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -16,15 +16,18 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { DividerModule } from 'primeng/divider';
 import { AutoCompleteCompleteEvent, AutoCompleteModule } from 'primeng/autocomplete';
+import { TreeTableModule } from 'primeng/treetable';
 
 import { MenuComponent } from '../../components/menu/menu.component';
 import { ProductService } from '../../services/product.service';
 import { OrderService } from '../../services/order.service';
-import { CategoryService } from '../../services/category.service';
 import { Product } from '../../types/Product';
 import { Client } from '../../types/Client';
 import { Item } from '../../types/Item';
 import { Order } from '../../types/Order';
+import { OrderResponse } from '../../types/OrderResponse';
+import { ItemChild } from '../../types/ItemChild';
+import { TreeResponse } from '../../types/TreeResponse';
 
 @Component({
   selector: 'app-orders',
@@ -46,11 +49,12 @@ import { Order } from '../../types/Order';
     InputSwitchModule,
     DividerModule,
     AutoCompleteModule,
+    TreeTableModule,
   ],
   providers: [
     ProductService,
-    CategoryService,
     MessageService,
+    OrderService,
   ],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss'
@@ -69,14 +73,22 @@ export class OrdersComponent implements OnInit {
   protected clients: Client[] = [];
   protected items: Item[] = [];
 
-  protected selectedProduct: Product = new Product();
-  protected selectedItem: Item = new Item();
-  protected selectedOrder: Order = new Order();
-  protected selectedClient: Client = new Client();
+  protected selectedProduct!: Product;
+  protected selectedItem!: Item;
+  protected selectedChild!: ItemChild;
+  protected selectedOrder!: TreeResponse;
+  protected selectedClient!: Client;
+
+  protected orders!: TreeResponse[];
+  protected orderResponse!: OrderResponse;
+  protected itemChild!: ItemChild;
+  protected children: ItemChild[] = [];
+  protected order!: Order;
 
   protected msg: string = '';
   protected hdrMsg: string = '';
 
+  protected cols: any[] = []; 
   username: any | undefined;
 
   page = 0;
@@ -91,17 +103,55 @@ export class OrdersComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.cols = [
+      { field: 'key', header: 'Code' },
+      { field: 'total', header: 'Total' },
+      { field: 'date', header: 'Date' },
+    ];
     this.clients = JSON.parse('[{"id": 1, "name": "Client 1"}, {"id": 2, "name": "Client 2"}, {"id": 3, "name": "Client 3"}]');
     // console.log(JSON.stringify(this.clients, null, 2));
     this.username = sessionStorage.getItem("username");
     this.getProducts();
+    this.getOrders();
+  }
+
+  getOrders() {
+    this.orderService.getOrders().subscribe({
+      next: (data) => {
+        this.orders = data;
+        console.log(`ORDERS: ${JSON.stringify(this.orders, null, 2)}`);
+      },
+      error: (e) => {
+        console.log(`ERROR: ${JSON.stringify(e, null, 2)}`);
+        this.credentialsErrorMsg(e);
+        this.notAllowedMsg(e);
+        this.insternalErrorMsg(e);
+        setTimeout(() => { this.router.navigate(["login"]) }, 2000);
+      }
+    });
+  }
+
+  getOrder(id: number) {
+    this.orderService.getOrder(id).subscribe({
+      next: (data) => {
+        this.order = data;
+        // console.log(`ORDER: ${JSON.stringify(this.order, null, 2)}`);
+      },
+      error: (e) => {
+        console.log(JSON.stringify(e, null, 2));
+        this.credentialsErrorMsg(e);
+        this.notAllowedMsg(e);
+        this.insternalErrorMsg(e);
+        setTimeout(() => { this.router.navigate(["login"]) }, 2000);
+      }
+    });
   }
 
   getProducts() {
     this.productService.getProducts().subscribe({
       next: (data) => {
         this.products = data;
-        // console.log(JSON.stringify(this.products, null, 2));
+        // console.log(`PRODUCTS: ${JSON.stringify(this.products, null, 2)}`);
       },
       error: (e) => {
         this.credentialsErrorMsg(e);
@@ -114,11 +164,9 @@ export class OrdersComponent implements OnInit {
 
   onSelectProduct(event: any) {
     console.log(JSON.stringify(event, null, 2));
-    this.selectedProduct = event.value;
-    const price: any = this.selectedProduct?.price;
-    const total = parseInt(this.form.value.quantity) * parseFloat(price);
+    this.selectedOrder = event.value;
+    const total = this.form.value.total;
     this.form.patchValue({
-      price: price,
       totalItem: total,
     });
   }
@@ -148,9 +196,20 @@ export class OrdersComponent implements OnInit {
     }
   }
 
+  onOrderSelect(event: any) {
+    this.children = this.selectedOrder.children;
+    console.log(JSON.stringify(this.selectedChild, null, 2));
+  }
+
+  onOrderUnselect(event: any) {
+    this.selectedOrder = new TreeResponse();
+    this.children = this.selectedOrder.children;
+    this.form.reset();
+  }
+
   onRowSelect(event: any) {
     this.form.setValue({
-      product: this.selectedItem?.product,
+      order: this.selectedItem?.product,
       price: this.selectedItem?.price,
       quantity: this.selectedItem?.quantity,
       totalItem: this.selectedItem?.total
@@ -159,7 +218,7 @@ export class OrdersComponent implements OnInit {
   }
 
   onRowUnselect(event: any) {
-    this.selectedItem = new Item();
+    this.selectedChild = new ItemChild();
     this.form.reset();
   }
 
@@ -182,21 +241,21 @@ export class OrdersComponent implements OnInit {
   }
 
   addItem() {
-    const order = this.form.value as Item;
-    if (!order.product?.id) {
-      this.msg = 'Product is required';
-      this.hdrMsg = 'Error';
-      this.showMsg();
-      return;
-    }
-    if (!this.selectedOrder.id) {
-      this.addOrder(this.selectedOrder);
-    }
-    if (this.items.length == 0) {
-      return;
-    }
+    // const order = this.form.value as Item;
+    // if (!order.product?.id) {
+    //   this.msg = 'Product is required';
+    //   this.hdrMsg = 'Error';
+    //   this.showMsg();
+    //   return;
+    // }
+    // if (!this.selectedOrder.id) {
+    //   this.addOrder(this.selectedOrder);
+    // }
+    // if (this.items.length == 0) {
+    //   return;
+    // }
   }
-  
+
   getItems() {
 
   }
@@ -222,22 +281,22 @@ export class OrdersComponent implements OnInit {
   }
 
   deleteItem() {
-    // const id: number = this.selectedItem?.id!;
-    // this.productService.deleteProduct(id).subscribe({
-    //   next: (data: any) => {
-    //     this.onRowUnselect(null);
-    //     this.getPageOfProducts();
-    //     this.msg = 'Product deleted with success!';
-    //     this.hdrMsg = 'Success';
-    //     this.showMsg();
-    //   },
-    //   error: (e) => {
-    //     this.credentialsErrorMsg(e);
-    //     this.notAllowedMsg(e);
-    //     this.insternalErrorMsg(e);
-    //     // setTimeout(() => { this.router.navigate(["login"]) }, 1500);
-    //   }
-    // });
+    const id: number = this.selectedChild.id;
+    this.productService.deleteProduct(id).subscribe({
+      next: (data: any) => {
+        this.onRowUnselect(null);
+        this.getOrders();
+        this.msg = 'Item deleted with success!';
+        this.hdrMsg = 'Success';
+        this.showMsg();
+      },
+      error: (e) => {
+        this.credentialsErrorMsg(e);
+        this.notAllowedMsg(e);
+        this.insternalErrorMsg(e);
+        // setTimeout(() => { this.router.navigate(["login"]) }, 1500);
+      }
+    });
   }
 
   credentialsErrorMsg(e: any) {

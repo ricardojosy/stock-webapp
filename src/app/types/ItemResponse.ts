@@ -1,7 +1,7 @@
+import { Order } from "./Order";
 import { Product } from "./Product";
 
-export class ItemChild {
-    key!: string;
+export class ItemResponse {
     id!: number;
     product!: Product;
     price!: number;

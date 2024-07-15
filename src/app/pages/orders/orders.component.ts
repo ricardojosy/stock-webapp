@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { ToastModule } from 'primeng/toast';
-import { MessageService, TreeNode } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -21,13 +21,11 @@ import { TreeTableModule } from 'primeng/treetable';
 import { MenuComponent } from '../../components/menu/menu.component';
 import { ProductService } from '../../services/product.service';
 import { OrderService } from '../../services/order.service';
-import { Product } from '../../types/Product';
 import { Client } from '../../types/Client';
 import { Item } from '../../types/Item';
 import { Order } from '../../types/Order';
 import { OrderResponse } from '../../types/OrderResponse';
-import { ItemChild } from '../../types/ItemChild';
-import { TreeResponse } from '../../types/TreeResponse';
+import { ItemResponse } from '../../types/ItemResponse';
 
 @Component({
   selector: 'app-orders',
@@ -61,6 +59,9 @@ import { TreeResponse } from '../../types/TreeResponse';
 })
 export class OrdersComponent implements OnInit {
 
+  // form.get('first')?.enable();
+  // form.get('last')?.disable();
+
   protected form: FormGroup = new FormGroup({
     product: new FormControl('', Validators.required),
     price: new FormControl({ value: 0, disabled: true }),
@@ -68,27 +69,20 @@ export class OrdersComponent implements OnInit {
     totalItem: new FormControl({ value: 0, disabled: true }),
   });
 
-  protected products: Product[] = [];
-  protected filteredProducts: Product[] = [];
-  protected clients: Client[] = [];
-  protected items: Item[] = [];
+  protected products: any[] = [];
+  protected filteredProducts: any[] = [];
+  protected clients: any[] = [];
+  protected orders!: any[];
+  protected items!: any[];
 
-  protected selectedProduct!: Product;
-  protected selectedItem!: Item;
-  protected selectedChild!: ItemChild;
-  protected selectedOrder!: TreeResponse;
-  protected selectedClient!: Client;
-
-  protected orders!: TreeResponse[];
-  protected orderResponse!: OrderResponse;
-  protected itemChild!: ItemChild;
-  protected children: ItemChild[] = [];
-  protected order!: Order;
+  protected selectedProduct!: any;
+  protected selectedItem!: any;
+  protected selectedOrder!: any;
+  protected selectedClient!: any;
 
   protected msg: string = '';
   protected hdrMsg: string = '';
 
-  protected cols: any[] = []; 
   username: any | undefined;
 
   page = 0;
@@ -103,11 +97,6 @@ export class OrdersComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.cols = [
-      { field: 'key', header: 'Code' },
-      { field: 'total', header: 'Total' },
-      { field: 'date', header: 'Date' },
-    ];
     this.clients = JSON.parse('[{"id": 1, "name": "Client 1"}, {"id": 2, "name": "Client 2"}, {"id": 3, "name": "Client 3"}]');
     // console.log(JSON.stringify(this.clients, null, 2));
     this.username = sessionStorage.getItem("username");
@@ -119,7 +108,7 @@ export class OrdersComponent implements OnInit {
     this.orderService.getOrders().subscribe({
       next: (data) => {
         this.orders = data;
-        console.log(`ORDERS: ${JSON.stringify(this.orders, null, 2)}`);
+        // console.log(`ORDERS: ${JSON.stringify(this.orders, null, 2)}`);
       },
       error: (e) => {
         console.log(`ERROR: ${JSON.stringify(e, null, 2)}`);
@@ -134,8 +123,8 @@ export class OrdersComponent implements OnInit {
   getOrder(id: number) {
     this.orderService.getOrder(id).subscribe({
       next: (data) => {
-        this.order = data;
-        // console.log(`ORDER: ${JSON.stringify(this.order, null, 2)}`);
+        this.selectedOrder = data;
+        console.log(`ORDER: ${JSON.stringify(this.selectedOrder, null, 2)}`);
       },
       error: (e) => {
         console.log(JSON.stringify(e, null, 2));
@@ -145,6 +134,15 @@ export class OrdersComponent implements OnInit {
         setTimeout(() => { this.router.navigate(["login"]) }, 2000);
       }
     });
+  }
+
+  back() {
+    this.selectedOrder = undefined;
+    this.selectedProduct = undefined;
+    this.items = [];
+    this.getOrders();
+    this.form.reset();
+    console.log(`BACK: ${JSON.stringify(this.selectedOrder, null, 2)}`);
   }
 
   getProducts() {
@@ -164,15 +162,18 @@ export class OrdersComponent implements OnInit {
 
   onSelectProduct(event: any) {
     console.log(JSON.stringify(event, null, 2));
-    this.selectedOrder = event.value;
-    const total = this.form.value.total;
+    this.selectedProduct = event.value;
+    const price = this.selectedProduct.price;
+    const total = parseFloat(price) * this.form.value.quantity;
     this.form.patchValue({
+      price: price,
       totalItem: total,
     });
   }
 
   getTotalItem(event: any) {
     const price: any = this.selectedProduct?.price;
+    console.log(`PRICE: ${price}`);
     const total: number = parseFloat(price) * this.form.value.quantity;
     this.form.patchValue({
       totalItem: total
@@ -197,38 +198,46 @@ export class OrdersComponent implements OnInit {
   }
 
   onOrderSelect(event: any) {
-    this.children = this.selectedOrder.children;
-    console.log(JSON.stringify(this.selectedChild, null, 2));
+    // console.log(`EVENT ORDER: ${JSON.stringify(event, null, 2)}`);
+    this.items = this.selectedOrder.items;
+    this.sortItems();
   }
 
-  onOrderUnselect(event: any) {
-    this.selectedOrder = new TreeResponse();
-    this.children = this.selectedOrder.children;
+  onBackToOrders(event: any) {
+    this.selectedOrder = new OrderResponse();
+    this.items = this.selectedOrder.items;
     this.form.reset();
   }
 
   onRowSelect(event: any) {
+    console.log(`ITEM: ${JSON.stringify(event, null, 2)}`);
+    const item = event.data;
     this.form.setValue({
-      order: this.selectedItem?.product,
-      price: this.selectedItem?.price,
-      quantity: this.selectedItem?.quantity,
-      totalItem: this.selectedItem?.total
+      product: item.product,
+      price: item.price,
+      quantity: item.quantity,
+      totalItem: item.total
     });
     // console.log(JSON.stringify(this.selectedItem, null, 2));
   }
 
   onRowUnselect(event: any) {
-    this.selectedChild = new ItemChild();
+    this.selectedItem = new ItemResponse();
     this.form.reset();
   }
 
-  addOrder(order: Order) {
+  addOrder() {
+    const order = new Order();
+    order.client = new Client();
+    order.items = [];
     this.orderService.addOrder(order).subscribe({
       next: (data: any) => {
         this.onRowUnselect(null);
         this.getItems();
-        this.msg = 'Product added with success!';
+        this.msg = 'New Order created!';
         this.hdrMsg = 'Success';
+        this.selectedOrder = data
+        console.log(JSON.stringify(this.selectedOrder, null, 2));
         this.showMsg();
       },
       error: (e) => {
@@ -241,19 +250,35 @@ export class OrdersComponent implements OnInit {
   }
 
   addItem() {
-    // const order = this.form.value as Item;
-    // if (!order.product?.id) {
-    //   this.msg = 'Product is required';
-    //   this.hdrMsg = 'Error';
-    //   this.showMsg();
-    //   return;
-    // }
+    const item = this.form.value as Item;
+    if (!item.product?.id) {
+      this.msg = 'Product is required';
+      this.hdrMsg = 'Error';
+      this.showMsg();
+      return;
+    }
+    this.selectedOrder.items.add(item);
+    this.orderService.updateOrder(this.selectedOrder);
     // if (!this.selectedOrder.id) {
     //   this.addOrder(this.selectedOrder);
     // }
     // if (this.items.length == 0) {
     //   return;
     // }
+  }
+
+  sortItems() {
+    // console.log(`ANTES: ${JSON.stringify(this.items, null, 2)}`);
+    this.items.sort((a, b) => {
+      if (a.id < b.id) {
+        return -1;
+      }
+      if (a.id > b.id) {
+        return 1;
+      }
+      return 0;
+    });
+    // console.log(`DEPOIS: ${JSON.stringify(this.items, null, 2)}`);
   }
 
   getItems() {
@@ -281,7 +306,7 @@ export class OrdersComponent implements OnInit {
   }
 
   deleteItem() {
-    const id: number = this.selectedChild.id;
+    const id: number = this.selectedItem.id;
     this.productService.deleteProduct(id).subscribe({
       next: (data: any) => {
         this.onRowUnselect(null);
@@ -331,7 +356,8 @@ export class OrdersComponent implements OnInit {
     this.messageService.add({ key: 'msgs', sticky: false, severity: sev, summary: this.msg, life: 1500 });
   }
 
-  showConfirm() {
+  showConfirm(item: any) {
+    this.selectedItem = item;
     this.messageService.add({ key: 'confirm', sticky: true, severity: 'warn', summary: 'Are you sure?' });
   }
 

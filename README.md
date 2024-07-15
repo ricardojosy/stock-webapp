@@ -1,4 +1,4 @@
-# StockWebapp
+# Stock
 
 Registration of products, users and Orders (under construction).
 

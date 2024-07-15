@@ -1,7 +1,8 @@
-import { ItemChild } from "./ItemChild";
+import { ItemResponse } from "./ItemResponse";
 
 export class OrderResponse {
-    key!: string;
+    id!: number;
     total!: number;
     date!: Date;
+    items!: ItemResponse[];
 }

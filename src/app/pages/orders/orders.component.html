@@ -1,54 +1,53 @@
 <app-menu />
 <h2>UNDER CONSTRUCTION</h2>
-<form [formGroup]="form" (ngSubmit)="addItem()">
-    <div class="grid" style="background-color: rgb(248, 238, 225);">
-        <div class="field col-3">
-            <label for="productName" class="block">Product</label>
-            <p-autoComplete formControlName="product" [suggestions]="filteredProducts"
-                (completeMethod)="filterProduct($event)" field="productName" (onSelect)="onSelectProduct($event)" />
-        </div>
 
-        <div class="field col-3">
-            <label for="price" class="block">Price</label>
-            <p-inputNumber formControlName="price" inputId="locale-user" mode="decimal" [minFractionDigits]="2"
-                [maxFractionDigits]="2" id="price" />
-        </div>
-
-        <div class="field col-3">
-            <label for="quantity" class="block">Quantity</label>
-            <p-inputNumber inputId="integeronly" formControlName="quantity" id="quantity"
-                incrementButtonIcon="pi pi-angle-right" decrementButtonIcon="pi pi-angle-left" [min]="1"
-                (onKeyDown)="getTotalItem($event)" />
-        </div>
-
-        <div class="field col-3">
-            <label for="totalItem" class="block">Total Item</label>
-            <p-inputNumber mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" formControlName="totalItem"
-                min="0" id="totalItem" />
-        </div>
+<div style="margin-top: 10px;" *ngIf="selectedOrder">
+    <div style="font-weight: 900;">
+        <span style="margin-right: 20px;">Order #: {{selectedOrder.id}}</span>
+        <span style="margin-right: 20px;">Total: {{selectedOrder.total | number:'1.2-2'}}</span>
+        <span style="margin-right: 20px;">Date: {{selectedOrder.date | date:'MMM dd, yyyy \'at\' hh:mm a'}}</span>
     </div>
-</form>
-<p-divider />
-<div class="card flex flex-wrap gap-3 justify-content-center" style="margin-top: 10px;">
-    <p-button *ngIf="selectedItem?.id == undefined" label="Add Item" [raised]="true" (onClick)="addItem()"
-        [disabled]="form.invalid" />
-    <span style="margin-right: 5px;">
-        <p-button *ngIf="selectedItem?.id != undefined" label="Update" [raised]="true" severity="success"
-            (onClick)="updateItem()" [disabled]="form.invalid" />
-    </span>
-    <span style="margin-right: 5px;">
-        <p-button *ngIf="selectedItem?.id != undefined" label="Delete" [raised]="true" severity="danger"
-            (onClick)="showConfirm()" />
-    </span>
+    <p-divider />
+    <form [formGroup]="form" (ngSubmit)="addItem()">
+        <div class="grid" style="background-color: rgb(248, 238, 225);">
+            <div class="field col-3">
+                <label for="productName" class="block">Product</label>
+                <p-autoComplete formControlName="product" [suggestions]="filteredProducts"
+                    (completeMethod)="filterProduct($event)" field="productName" (onSelect)="onSelectProduct($event)" />
+            </div>
+
+            <div class="field col-3">
+                <label for="price" class="block">Price</label>
+                <p-inputNumber formControlName="price" inputId="locale-user" mode="decimal" [minFractionDigits]="2"
+                    [maxFractionDigits]="2" id="price" />
+            </div>
+
+            <div class="field col-3">
+                <label for="quantity" class="block">Quantity</label>
+                <p-inputNumber inputId="integeronly" formControlName="quantity" id="quantity" [min]="1"
+                    (onKeyDown)="getTotalItem($event)" />
+            </div>
+
+            <div class="field col-3">
+                <label for="totalItem" class="block">Total Item</label>
+                <p-inputNumber mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"
+                    formControlName="totalItem" min="0" id="totalItem" />
+            </div>
+        </div>
+    </form>
 </div>
 <p-divider />
-
 <div class="card" *ngIf="selectedOrder == undefined">
+    <div class="card flex flex-wrap gap-3 justify-content-center" style="margin-top: 10px;">
+        <p-button label="New Order" [raised]="true" (onClick)="addOrder()" />
+    </div>
+    <p-divider />
+
     <p-scrollPanel [style]="{ width: '100%', height: '80vh' }">
         <p-table [value]="orders" selectionMode="single" [(selection)]="selectedOrder" dataKey="id"
-            (onRowSelect)="onOrderSelect($event)" (onRowUnselect)="onOrderUnselect($event)" [paginator]="true"
-            [rows]="5" styleClass="p-datatable-striped" [tableStyle]="{ 'min-width': '50rem' }"
-            [rowsPerPageOptions]="[5, 10, 20]" responsiveLayout="stack" [breakpoint]="'960px'">
+            (onRowSelect)="onOrderSelect($event)" [paginator]="true" [rows]="5" styleClass="p-datatable-striped"
+            [tableStyle]="{ 'min-width': '50rem' }" [rowsPerPageOptions]="[5, 10, 20]" responsiveLayout="stack"
+            [breakpoint]="'960px'">
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width:20%">Order Code</th>
@@ -58,9 +57,9 @@
             </ng-template>
             <ng-template pTemplate="body" let-order>
                 <tr [pSelectableRow]="order">
-                    <td>{{order.data.key}}</td>
-                    <td>{{order.data.total}}</td>
-                    <td>{{order.data.date}}</td>
+                    <td>{{order.id}}</td>
+                    <td>{{order.total | number:'1.2-2'}}</td>
+                    <td>{{order.date | date:'MMM dd, yyyy \'at\' hh:mm a'}}</td>
                 </tr>
             </ng-template>
         </p-table>
@@ -68,10 +67,24 @@
 </div>
 
 <div style="margin-top: 10px;" *ngIf="selectedOrder">
+    <div class="card flex flex-wrap gap-3 justify-content-center" style="margin-top: 10px;">
+        <span style="margin-right: 5px;">
+            <p-button label="Add Item" [raised]="true" severity="success" (onClick)="addItem()"
+                [disabled]="form.invalid" />
+        </span>
+        <span style="margin-right: 5px;">
+            <p-button label="Back" [raised]="true" severity="contrast" (onClick)="back()" />
+        </span>
+        <!-- <span style="margin-right: 5px;">
+            <p-button *ngIf="selectedItem?.id != undefined" label="Delete" [raised]="true" severity="danger"
+                (onClick)="showConfirm()" />
+        </span> -->
+    </div>
     <p-scrollPanel [style]="{ width: '100%', height: '80vh' }">
-        <p-table [value]="children" selectionMode="single" [(selection)]="selectedChild" dataKey="id" [paginator]="true"
+        <p-table [value]="items" selectionMode="single" [(selection)]="selectedItem" dataKey="id" [paginator]="true"
             [rows]="5" styleClass="p-datatable-striped" [tableStyle]="{ 'min-width': '50rem' }"
-            [rowsPerPageOptions]="[5, 10, 20]" responsiveLayout="stack" [breakpoint]="'960px'">
+            (onRowSelect)="onRowSelect($event)" [rowsPerPageOptions]="[5, 10, 20]" responsiveLayout="stack"
+            [breakpoint]="'960px'">
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width:60%">Product</th>
@@ -81,16 +94,16 @@
                     <th></th>
                 </tr>
             </ng-template>
-            <ng-template pTemplate="body" let-child>
-                <tr [pSelectableRow]="child">
-                    <td>{{child.product.productName}}</td>
-                    <td>{{child.quantity}}</td>
-                    <td>{{child.product.price}}</td>
-                    <td>{{child.totalItem}}</td>
+            <ng-template pTemplate="body" let-item>
+                <tr [pSelectableRow]="item">
+                    <td>{{item.product.productName}}</td>
+                    <td>{{item.quantity}}</td>
+                    <td>{{item.price | number:'1.2-2'}}</td>
+                    <td>{{item.total | number:'1.2-2'}}</td>
                     <td>
                         <span style="margin-right: 5px;">
                             <p-button icon="pi pi-trash" [rounded]="false" severity="danger" [outlined]="false"
-                                [raised]="true" (onClick)="showConfirm()" [raised]="true" size="small" />
+                                [raised]="true" (onClick)="showConfirm(item)" [raised]="true" size="small" />
                         </span>
                     </td>
                 </tr>
@@ -106,7 +119,7 @@
                 <span class="font-bold text-900">Confirm</span>
             </div>
             <div class="font-medium text-lg my-3 text-900">
-                Are you sure about delete {{selectedChild.product.productName}}?
+                Are you sure about delete {{selectedItem.product.productName}}?
             </div>
             <p-button label="Delete" (click)="onConfirm()" />
         </div>

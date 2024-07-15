@@ -5,7 +5,7 @@ export class Product {
     productName!: string;
     description!: string;
     category!: Category;
-    price!: number;
+    price!: any;
     available!: boolean;
     quantity!: number;
     createAt!: string

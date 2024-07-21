@@ -107,7 +107,7 @@
                     <td>{{product.description}}</td>
                     <td>{{product.category.categoryName}}</td>
                     <td style="text-align: center;">{{product.quantity}}</td>
-                    <td style="text-align: right;">{{product.price}}</td>
+                    <td style="text-align: right;">{{product.price | number:'1.2-2'}}</td>
                     <td style="text-align: center;"><p-checkbox [(ngModel)]="product.available" [binary]="true" disabled="true"/></td>
                 </tr>
             </ng-template>

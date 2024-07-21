@@ -4,7 +4,8 @@ export class Item {
     id!: number;
     product!: Product;
     price!: number;
-    quantity!: number;
     total!: number;
-    createAt!: string
+    quantity!: number;
+    orderId!: number;
+    createAt!: string;
 }

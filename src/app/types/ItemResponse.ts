@@ -7,4 +7,5 @@ export class ItemResponse {
     price!: number;
     total!: number;
     quantity!: number;
+    orderId!: undefined;
 }

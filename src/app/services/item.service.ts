@@ -1,20 +1,20 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Order } from '../types/Order';
-import { OrderResponse } from '../types/OrderResponse';
+import { Item } from '../types/Item';
+import { ItemResponse } from '../types/ItemResponse';
 
 @Injectable({
   providedIn: 'root'
 })
-export class OrderService {
+export class ItemService {
 
   apiUrl: string = "http://localhost:8080";
 
   constructor(private http: HttpClient) { }
 
-  getOrder(id: number): Observable<OrderResponse> {
-    return this.http.get<OrderResponse>(this.apiUrl + '/api/v1/orders/' + id, {
+  getItem(id: number): Observable<ItemResponse> {
+    return this.http.get<ItemResponse>(this.apiUrl + '/api/v1/items/' + id, {
       headers: new HttpHeaders({
         'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json',
@@ -23,8 +23,8 @@ export class OrderService {
     });
   }
 
-  getOrders(): Observable<any> {
-    return this.http.get<OrderResponse[]>(this.apiUrl + '/api/v1/orders', {
+  getItems(): Observable<any> {
+    return this.http.get<ItemResponse[]>(this.apiUrl + '/api/v1/items', {
       headers: new HttpHeaders({
         'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json',
@@ -33,8 +33,8 @@ export class OrderService {
     });
   }
 
-  public addOrder(order: Order): Observable<Order> {
-    return this.http.post<Order>(this.apiUrl + '/api/v1/orders', order, {
+  public addItem(item: Item): Observable<ItemResponse> {
+    return this.http.post<ItemResponse>(this.apiUrl + '/api/v1/items', item, {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem("accessToken")}`
@@ -42,17 +42,8 @@ export class OrderService {
     });
   }
 
-  public updateOrder(order: OrderResponse): Observable<OrderResponse> {
-    return this.http.patch<OrderResponse>(this.apiUrl + '/api/v1/orders/' + order.id, order, {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionStorage.getItem("accessToken")}`
-      })
-    });
-  }
-
-  public deleteOrder(id: number): Observable<object> {
-    return this.http.delete(this.apiUrl + '/api/v1/orders/' + id, {
+  public updateItem(item: Item): Observable<object> {
+    return this.http.patch<ItemResponse>(this.apiUrl + '/api/v1/items/' + item.id + '/' + item.orderId, item, {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem("accessToken")}`
@@ -61,7 +52,7 @@ export class OrderService {
   }
 
   public deleteItem(itemId: number, orderId: number): Observable<object> {
-    return this.http.delete(this.apiUrl + '/api/v1/orders/item/' + itemId + '/' + orderId, {
+    return this.http.delete(this.apiUrl + '/api/v1/items/' + itemId + '/' + orderId, {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem("accessToken")}`
